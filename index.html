@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>One Point Lamongan</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css" />
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+          colors: {
+            brand: {
+              dark: '#090d16',
+              card: '#111827',
+              surface: '#1f2937',
+              gold: '#f59e0b',
+              goldLight: '#fbbf24',
+              red: '#ef4444'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-amber-500 selection:text-slate-950">
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm pointer-events-none"></div>
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="sticky top-0 z-40 glass border-b border-slate-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <img id="nav-logo" src="" alt="Logo" class="w-10 h-10 rounded-xl object-cover border border-amber-500/40 bg-slate-800" />
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 id="nav-brand-name" class="font-extrabold text-base sm:text-lg tracking-tight text-white">ONE POINT LAMONGAN</h1>
+            <span class="hidden sm:inline-block px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">Hybrid System</span>
+          </div>
+          <p id="nav-hours" class="text-[11px] text-slate-400">Senin – Sabtu • 07.00 – 21.30 WIB</p>
+        </div>
+      </div>
+
+      <!-- MODE SWITCHER (MEMBER VS OWNER/ADMIN) -->
+      <div class="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
+        <button onclick="switchMode('member')" id="btn-mode-member" class="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all bg-amber-500 text-slate-950 shadow">
+          <i data-lucide="user" class="w-3.5 h-3.5"></i>
+          <span>Tampilan Member</span>
+        </button>
+        <button onclick="switchMode('owner')" id="btn-mode-owner" class="px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all text-slate-300 hover:text-white">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+          <span>Owner & Kasir</span>
+          <span id="badge-pending-total" class="px-1.5 py-0.2 text-[10px] rounded-full bg-red-500 text-white font-extrabold">2</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- COVER BANNER & GYM PROFILE HEADER -->
+  <section class="relative w-full h-52 sm:h-64 overflow-hidden border-b border-slate-800">
+    <img id="hero-cover" src="" alt="Sampul One Point Lamongan" class="w-full h-full object-cover object-center" />
+    <div class="absolute inset-0 bg-gradient-to-t from-[#090d16] via-[#090d16]/70 to-transparent"></div>
+
+    <!-- Owner Quick Customize Cover Button -->
+    <div id="owner-cover-controls" class="hidden absolute top-4 right-4 z-20 flex gap-2">
+      <label class="cursor-pointer px-3 py-1.5 rounded-lg bg-slate-900/90 hover:bg-slate-800 text-xs font-semibold text-amber-400 border border-amber-500/40 flex items-center gap-1.5 shadow-lg">
+        <i data-lucide="image" class="w-3.5 h-3.5"></i>
+        <span>Ganti Foto Sampul</span>
+        <input type="file" accept="image/*" class="hidden" onchange="handleImageUpload(event, 'cover')" />
+      </label>
+      <button onclick="openProfileModal()" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-xs font-bold text-slate-950 flex items-center gap-1.5 shadow-lg">
+        <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+        <span>Custom Profil & Logo</span>
+      </button>
+    </div>
+
+    <div class="absolute bottom-4 left-0 right-0 max-w-7xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+      <div class="flex items-end gap-4">
+        <div class="relative group">
+          <img id="hero-logo" src="" alt="Logo Gym" class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-amber-500 shadow-xl bg-slate-900" />
+        </div>
+        <div>
+          <h2 id="hero-title" class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">ONE POINT LAMONGAN</h2>
+          <p id="hero-tagline" class="text-xs sm:text-sm text-amber-400 font-medium">Pusat Kebugaran, Fitness & Personal Training Profesional</p>
+          <div class="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1 text-xs text-slate-300">
+            <span class="flex items-center gap-1"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-red-400"></i> <span id="hero-address">Jl. Kinameng No.30, Krajan, Sidokumpul, Lamongan</span></span>
+            <span class="flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-400"></i> <span id="hero-hours">Senin–Sabtu 07.00–21.30 (Minggu Libur)</span></span>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <a id="hero-wa-link" href="#" target="_blank" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center gap-1.5 shadow-lg">
+          <i data-lucide="message-circle" class="w-4 h-4"></i>
+          <span>WA Admin / Kasir</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6">
+
+    <!-- VIEW 1: TAMPILAN MEMBER -->
+    <div id="view-member" class="space-y-6">
+      <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
+        <button onclick="switchMemberTab('register')" id="mtab-register" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 bg-amber-500 text-slate-950">
+          <i data-lucide="user-plus" class="w-4 h-4"></i> Daftar / Perpanjang Membership
+        </button>
+        <button onclick="switchMemberTab('qrpass')" id="mtab-qrpass" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 bg-slate-800/80 text-slate-300 hover:text-white">
+          <i data-lucide="qr-code" class="w-4 h-4"></i> Kartu Digital & QR Pass
+        </button>
+        <button onclick="switchMemberTab('trainers')" id="mtab-trainers" class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold flex items-center gap-2 bg-slate-800/80 text-slate-300 hover:text-white">
+          <i data-lucide="dumbbell" class="w-4 h-4"></i> Personal Trainer & Jadwal
+        </button>
+      </div>
+
+      <!-- MEMBER TAB A: PENDAFTARAN & PEMBAYARAN -->
+      <div id="member-panel-register" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-5 space-y-4">
+          <div class="glass rounded-2xl p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-base text-white flex items-center gap-2">
+                <i data-lucide="tag" class="w-4 h-4 text-amber-400"></i> Daftar Tarif Membership
+              </h3>
+              <span class="text-[11px] px-2 py-0.5 rounded bg-slate-800 text-slate-300">Tanpa Kartu Fisik (Scan QR)</span>
+            </div>
+            <div class="space-y-3" id="member-pricelist-cards"></div>
+            <div class="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-200 space-y-1">
+              <p class="font-bold flex items-center gap-1.5"><i data-lucide="info" class="w-4 h-4 text-amber-400"></i> Ketentuan Akses Gym:</p>
+              <ul class="list-disc pl-5 space-y-0.5 text-slate-300">
+                <li>Masa aktif paket bulanan <strong>30 Hari</strong> (tanpa biaya cetak kartu).</li>
+                <li>Kuota masuk gym maksimal <strong>10x check-in per hari</strong> via Scan QR.</li>
+                <li>Khusus <strong>Member Pelajar (Rp 75.000)</strong> wajib unggah Kartu Pelajar/KTM dan menunggu <strong>ACC Admin</strong> sebelum melakukan pembayaran.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-7">
+          <div class="glass rounded-2xl p-5 sm:p-6">
+            <h3 class="font-bold text-lg text-white mb-1">Formulir Membership Mandiri</h3>
+            <p class="text-xs text-slate-400 mb-5">Cukup masukkan Nama & Nomor WhatsApp aktif untuk membuat QR Pass masuk gym.</p>
+
+            <form id="form-member-register" onsubmit="submitMemberRegistration(event)" class="space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">Nama Lengkap *</label>
+                  <input type="text" id="reg-name" required placeholder="Contoh: Budi Santoso" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:border-amber-500 focus:outline-none" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">Nomor WhatsApp Aktif *</label>
+                  <input type="tel" id="reg-wa" required placeholder="Contoh: 081234567890" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:border-amber-500 focus:outline-none" />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">Pilih Paket Membership *</label>
+                  <select id="reg-plan" onchange="handlePlanChange()" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm text-white focus:border-amber-500 focus:outline-none">
+                    <option value="reguler">Member Reguler (30 Hari) — Rp 85.000</option>
+                    <option value="pelajar">Member Pelajar (30 Hari) — Rp 75.000</option>
+                    <option value="harian">Gym Harian / Isidentil (1 Hari) — Rp 25.000</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-300 mb-1.5">Foto Profil Member <span class="text-slate-500 font-normal">(Opsional / Tidak Wajib)</span></label>
+                  <input type="file" id="reg-photo" accept="image/*" class="w-full text-xs text-slate-400 file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-amber-400 hover:file:bg-slate-700" />
+                </div>
+              </div>
+
+              <div id="student-verify-box" class="hidden p-4 rounded-xl bg-blue-950/40 border border-blue-500/40 space-y-3">
+                <div class="flex items-center gap-2 text-blue-400 font-bold text-xs">
+                  <i data-lucide="graduation-cap" class="w-4 h-4"></i>
+                  <span>Verifikasi Identitas Pelajar / Mahasiswa (Wajib Sebelum Bayar)</span>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Asal Sekolah / Kampus & NISN/NIM *</label>
+                    <input type="text" id="reg-school" placeholder="SMAN 1 Lamongan / NISN..." class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-700 text-xs text-white focus:border-blue-400 focus:outline-none" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">Upload Foto Kartu Pelajar / KTM *</label>
+                    <input type="file" id="reg-student-card" accept="image/*" class="w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white" />
+                  </div>
+                </div>
+                <p class="text-[11px] text-blue-300">Setelah dikirim, Admin/Kasir akan memeriksa kartu pelajar Anda. Jika sudah di-ACC, tombol pembayaran QRIS / Tunai akan terbuka otomatis di menu <strong>Kartu Digital & QR Pass</strong>.</p>
+              </div>
+
+              <div id="payment-method-box" class="space-y-2">
+                <label class="block text-xs font-semibold text-slate-300">Metode Pembayaran *</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <label class="cursor-pointer flex items-center gap-3 p-3 rounded-xl bg-slate-900 border border-slate-700 hover:border-amber-500">
+                    <input type="radio" name="pay_method" value="QRIS" checked class="accent-amber-500" />
+                    <div>
+                      <div class="text-xs font-bold text-white">QRIS Otomatis (Instan Aktif)</div>
+                      <div class="text-[11px] text-emerald-400">QR Pass langsung aktif detik ini</div>
+                    </div>
+                  </label>
+                  <label class="cursor-pointer flex items-center gap-3 p-3 rounded-xl bg-slate-900 border border-slate-700 hover:border-amber-500">
+                    <input type="radio" name="pay_method" value="TUNAI" class="accent-amber-500" />
+                    <div>
+                      <div class="text-xs font-bold text-white">Bayar Tunai di Meja Kasir</div>
+                      <div class="text-[11px] text-slate-400">Menunggu konfirmasi tunai kasir</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <button type="submit" id="btn-submit-reg" class="w-full py-3 rounded-xl gold-gradient text-slate-950 font-extrabold text-sm shadow-lg hover:opacity-95 transition flex items-center justify-center gap-2">
+                <i data-lucide="check-circle-2" class="w-4 h-4"></i>
+                <span>Daftar & Proses Pembayaran</span>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- MEMBER TAB B: KARTU DIGITAL & QR PASS -->
+      <div id="member-panel-qrpass" class="hidden space-y-6">
+        <div class="glass rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 class="font-bold text-base text-white">Cek Akun & Kartu QR Digital Member</h3>
+            <p class="text-xs text-slate-400">Pilih akun member untuk melihat QR Pass & melakukan pembayaran pasca-ACC.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="select-active-member" onchange="renderMemberPass()" class="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs sm:text-sm text-white focus:border-amber-500 focus:outline-none"></select>
+          </div>
+        </div>
+        <div id="member-pass-container" class="grid grid-cols-1 lg:grid-cols-12 gap-6"></div>
+      </div>
+
+      <!-- MEMBER TAB C: PERSONAL TRAINER, KONSULTASI & ABSENSI -->
+      <div id="member-panel-trainers" class="hidden space-y-6">
+        <div class="glass rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h3 class="font-bold text-lg text-white">Direktori Personal Trainer One Point Lamongan</h3>
+            <p class="text-xs text-slate-400">Alur Paket PT: <strong>1. Pilih Trainer & Konsultasi via WA</strong> &rarr; <strong>2. Ajukan Paket & Jadwal</strong> &rarr; <strong>3. Trainer ACC</strong> &rarr; <strong>4. Absensi Sesi Latihan</strong>.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400">Akun Member:</span>
+            <select id="select-pt-member" onchange="renderMemberPTStatus()" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white"></select>
+          </div>
+        </div>
+        <div id="member-pt-subscriptions" class="space-y-3"></div>
+        <div id="trainers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+      </div>
+    </div>
+
+    <!-- VIEW 2: DASHBOARD OWNER, ADMIN/KASIR & APPROVAL TRAINER -->
+    <div id="view-owner" class="hidden space-y-6">
+      <div class="flex flex-wrap gap-2 border-b border-slate-800 pb-3">
+        <button onclick="switchOwnerTab('scanner')" id="otab-scanner" class="px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 bg-amber-500 text-slate-950">
+          <i data-lucide="scan-line" class="w-4 h-4"></i> Terminal Scan & Kasir
+        </button>
+        <button onclick="switchOwnerTab('approvals')" id="otab-approvals" class="px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 bg-slate-800 text-slate-300 hover:text-white">
+          <i data-lucide="check-square" class="w-4 h-4"></i> ACC Pelajar & Persetujuan PT
+          <span id="badge-approvals-tab" class="px-1.5 py-0.2 text-[10px] rounded-full bg-red-500 text-white">2</span>
+        </button>
+        <button onclick="switchOwnerTab('members')" id="otab-members" class="px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 bg-slate-800 text-slate-300 hover:text-white">
+          <i data-lucide="users" class="w-4 h-4"></i> Database Member & Laporan
+        </button>
+        <button onclick="switchOwnerTab('custom')" id="otab-custom" class="px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 bg-slate-800 text-slate-300 hover:text-white">
+          <i data-lucide="sliders" class="w-4 h-4"></i> Custom Web, Tarif & Trainer
+        </button>
+      </div>
+
+      <!-- OWNER TAB 1: TERMINAL SCAN CHECK-IN & INPUT KASIR -->
+      <div id="owner-panel-scanner" class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-6 glass rounded-2xl p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-base text-white flex items-center gap-2">
+              <i data-lucide="qr-code" class="w-5 h-5 text-amber-400"></i> Scanner Check-In Gym (Maks. 10x/Hari)
+            </h3>
+            <span id="sim-date-label" class="text-xs px-2.5 py-1 rounded-lg bg-slate-800 text-amber-400 font-semibold"></span>
+          </div>
+
+          <div class="p-4 rounded-xl bg-slate-900 border border-slate-700 space-y-3">
+            <label class="block text-xs font-semibold text-slate-300">Scan QR / Masukkan ID Member atau Nomor WA:</label>
+            <div class="flex gap-2">
+              <input type="text" id="scan-input" placeholder="Contoh: OP-1001 atau 0812..." class="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:border-amber-500 focus:outline-none" />
+              <button onclick="processCheckIn()" class="px-4 py-2.5 rounded-xl gold-gradient text-slate-950 font-extrabold text-xs sm:text-sm flex items-center gap-1.5">
+                <i data-lucide="scan" class="w-4 h-4"></i> Scan Masuk
+              </button>
+            </div>
+            <div class="flex flex-wrap items-center gap-1.5 pt-1">
+              <span class="text-[11px] text-slate-400">Uji Cepat:</span>
+              <div id="quick-scan-buttons" class="flex flex-wrap gap-1.5"></div>
+            </div>
+          </div>
+
+          <div id="scan-result-box" class="hidden p-4 rounded-xl border text-sm"></div>
+
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800 text-xs">
+            <span class="text-slate-400">Simulasi Operasional:</span>
+            <button onclick="simulateNextDay()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-amber-400 font-semibold flex items-center gap-1">
+              <i data-lucide="fast-forward" class="w-3.5 h-3.5"></i> Reset Hari Berikutnya (0/10)
+            </button>
+          </div>
+        </div>
+
+        <div class="lg:col-span-6 space-y-4">
+          <div class="glass rounded-2xl p-5 space-y-3">
+            <h3 class="font-bold text-base text-white flex items-center gap-2">
+              <i data-lucide="banknote" class="w-5 h-5 text-emerald-400"></i> Input Cepat Kasir Meja Depan (Tunai / Walk-In)
+            </h3>
+            <form onsubmit="kasirQuickAdd(event)" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input type="text" id="kasir-name" required placeholder="Nama Pengunjung / Member" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white" />
+              <input type="tel" id="kasir-wa" required placeholder="Nomor WhatsApp" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white" />
+              <select id="kasir-plan" class="px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white">
+                <option value="harian">Gym Harian (Rp 25.000)</option>
+                <option value="reguler">Member Reguler 30 Hari (Rp 85.000)</option>
+                <option value="pelajar">Member Pelajar 30 Hari — Verified (Rp 75.000)</option>
+              </select>
+              <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i> Terima Tunai & Aktifkan
+              </button>
+            </form>
+          </div>
+
+          <div class="glass rounded-2xl p-5">
+            <h4 class="font-bold text-sm text-white mb-3">Log Check-In Masuk Hari Ini</h4>
+            <div id="checkin-logs-list" class="space-y-2 max-h-56 overflow-y-auto custom-scroll text-xs"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OWNER TAB 2: ANTREAN ACC KARTU PELAJAR, PEMBAYARAN TUNAI & APPROVAL PT -->
+      <div id="owner-panel-approvals" class="hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="glass rounded-2xl p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-base text-white flex items-center gap-2">
+                <i data-lucide="graduation-cap" class="w-5 h-5 text-blue-400"></i> Verifikasi Member Pelajar & Kasir
+              </h3>
+              <span class="text-[11px] text-slate-400">ACC sebelum bayar</span>
+            </div>
+            <div id="admin-student-queue" class="space-y-3"></div>
+          </div>
+
+          <div class="glass rounded-2xl p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-base text-white flex items-center gap-2">
+                <i data-lucide="dumbbell" class="w-5 h-5 text-amber-400"></i> Portal Persetujuan (ACC) Personal Trainer
+              </h3>
+              <span class="text-[11px] text-slate-400">Setelah konsultasi</span>
+            </div>
+            <div id="trainer-approval-queue" class="space-y-3"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OWNER TAB 3: DATABASE MEMBER & REKAP PENDAPATAN -->
+      <div id="owner-panel-members" class="hidden space-y-6">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4" id="finance-kpi-cards"></div>
+        <div class="glass rounded-2xl p-5 space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h3 class="font-bold text-base text-white">Master Data Member & Pengingat Jatuh Tempo (H-7)</h3>
+            <input type="text" id="search-member-input" onkeyup="renderMembersTable()" placeholder="Cari nama / No WA..." class="px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-700 text-xs text-white w-full sm:w-64" />
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="border-b border-slate-800 text-slate-400">
+                  <th class="py-2.5 px-3">Member</th>
+                  <th class="py-2.5 px-3">Paket</th>
+                  <th class="py-2.5 px-3">Status</th>
+                  <th class="py-2.5 px-3">Jatuh Tempo</th>
+                  <th class="py-2.5 px-3">Scan Hari Ini</th>
+                  <th class="py-2.5 px-3 text-right">Aksi & WA Reminder</th>
+                </tr>
+              </thead>
+              <tbody id="members-table-body" class="divide-y divide-slate-800/70"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- OWNER TAB 4: CUSTOMISASI WEBSITE, TARIF & KELOLA TRAINER -->
+      <div id="owner-panel-custom" class="hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div class="lg:col-span-5 glass rounded-2xl p-5 space-y-4">
+            <h3 class="font-bold text-base text-white flex items-center gap-2">
+              <i data-lucide="building-2" class="w-5 h-5 text-amber-400"></i> Custom Profil & Tarif One Point
+            </h3>
+            <form onsubmit="saveCustomSettings(event)" class="space-y-3 text-xs">
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Nama Tempat Gym</label>
+                <input type="text" id="cust-name" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white" />
+              </div>
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Tagline / Slogan</label>
+                <input type="text" id="cust-tagline" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white" />
+              </div>
+              <div>
+                <label class="block text-slate-300 font-semibold mb-1">Alamat Lengkap</label>
+                <textarea id="cust-address" rows="2" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white"></textarea>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-slate-300 font-semibold mb-1">Jam Operasional</label>
+                  <input type="text" id="cust-hours" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white" />
+                </div>
+                <div>
+                  <label class="block text-slate-300 font-semibold mb-1">No. WA Admin/Kasir</label>
+                  <input type="text" id="cust-wa" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white" />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-slate-300 font-semibold mb-1">Upload Logo Gym</label>
+                  <input type="file" accept="image/*" onchange="handleImageUpload(event, 'logo')" class="w-full text-[11px] text-slate-400" />
+                </div>
+                <div>
+                  <label class="block text-slate-300 font-semibold mb-1">Upload Foto Sampul</label>
+                  <input type="file" accept="image/*" onchange="handleImageUpload(event, 'cover')" class="w-full text-[11px] text-slate-400" />
+                </div>
+              </div>
+              <div class="pt-2 border-t border-slate-800 grid grid-cols-3 gap-2">
+                <div>
+                  <label class="block text-slate-400 mb-1">Tarif Reguler</label>
+                  <input type="number" id="cust-price-reg" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white" />
+                </div>
+                <div>
+                  <label class="block text-slate-400 mb-1">Tarif Pelajar</label>
+                  <input type="number" id="cust-price-stu" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white" />
+                </div>
+                <div>
+                  <label class="block text-slate-400 mb-1">Tarif Harian</label>
+                  <input type="number" id="cust-price-day" class="w-full px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-white" />
+                </div>
+              </div>
+              <div class="flex gap-2 pt-2">
+                <button type="submit" class="flex-1 py-2.5 rounded-xl gold-gradient text-slate-950 font-extrabold">Simpan Perubahan</button>
+                <button type="button" onclick="resetDemoData()" class="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-red-950 text-red-400 font-semibold">Reset Default</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="lg:col-span-7 glass rounded-2xl p-5 space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="font-bold text-base text-white flex items-center gap-2">
+                <i data-lucide="users-round" class="w-5 h-5 text-amber-400"></i> Kelola & Tambah Personal Trainer (Custom)
+              </h3>
+              <button onclick="openTrainerFormModal()" class="px-3 py-1.5 rounded-xl gold-gradient text-slate-950 text-xs font-extrabold flex items-center gap-1">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Trainer
+              </button>
+            </div>
+            <div id="owner-trainers-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[460px] overflow-y-auto custom-scroll pr-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL: CONSULTATION & BOOK PT PACKAGE -->
+  <div id="modal-pt-book" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass rounded-2xl max-w-lg w-full p-6 space-y-4 border border-slate-700">
+      <div class="flex items-center justify-between">
+        <h3 class="font-extrabold text-base text-white">Konsultasi & Pengajuan Paket Personal Trainer</h3>
+        <button onclick="closeModal('modal-pt-book')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div id="pt-book-trainer-info" class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-3"></div>
+      <form onsubmit="submitPTConsultation(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="book-trainer-id" />
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Pilih Paket Latihan (Sesuai Pricelist Resmi)</label>
+          <select id="book-pt-package" class="w-full px-3 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white"></select>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Pilihan Hari Latihan</label>
+            <input type="text" id="book-pt-days" required placeholder="Contoh: Senin, Rabu, Jumat" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white" />
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Jam Latihan (07.00–21.30)</label>
+            <input type="text" id="book-pt-time" required placeholder="Contoh: 16.30 WIB" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white" />
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Catatan / Target Konsultasi (Fat Loss / Bulking / Rehab)</label>
+          <textarea id="book-pt-notes" rows="2" placeholder="Ceritakan target latihan atau riwayat cedera sebelum konsultasi..." class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white"></textarea>
+        </div>
+        <div class="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-200">
+          <strong>Wajib Konsultasi & ACC Trainer:</strong> Paket PT tidak langsung aktif sebelum Anda berkonsultasi dan disetujui (ACC) oleh trainer yang bersangkutan.
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2 pt-1">
+          <a id="book-pt-wa-btn" href="#" target="_blank" class="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-center flex items-center justify-center gap-1.5">
+            <i data-lucide="message-circle" class="w-4 h-4"></i> 1. Chat Konsultasi WA
+          </a>
+          <button type="submit" class="flex-1 py-2.5 rounded-xl gold-gradient text-slate-950 font-extrabold flex items-center justify-center gap-1.5">
+            <i data-lucide="send" class="w-4 h-4"></i> 2. Kirim Pengajuan ke Trainer
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD / EDIT TRAINER -->
+  <div id="modal-trainer-form" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass rounded-2xl max-w-md w-full p-6 space-y-4 border border-slate-700">
+      <div class="flex items-center justify-between">
+        <h3 id="trainer-modal-title" class="font-extrabold text-base text-white">Tambah / Edit Personal Trainer</h3>
+        <button onclick="closeModal('modal-trainer-form')" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <form onsubmit="saveTrainerForm(event)" class="space-y-3 text-xs">
+        <input type="hidden" id="edit-trainer-id" />
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Nama Trainer / Coach *</label>
+          <input type="text" id="tf-name" required class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Jabatan / Gelar</label>
+            <input type="text" id="tf-role" required placeholder="Personal Trainer" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white" />
+          </div>
+          <div>
+            <label class="block text-slate-300 font-semibold mb-1">Tier Pricelist *</label>
+            <select id="tf-tier" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white">
+              <option value="reguler">PT Reguler (Mulai Rp 150k / 600k)</option>
+              <option value="atlet">Spesialis Atlet Nasional (Mulai Rp 700k)</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Nomor WhatsApp Trainer *</label>
+          <input type="tel" id="tf-wa" required placeholder="6281234567890" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white" />
+        </div>
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Profil & Spesialisasi Latihan</label>
+          <textarea id="tf-bio" rows="2" class="w-full px-3 py-2 rounded-xl bg-slate-900 border border-slate-700 text-white"></textarea>
+        </div>
+        <div>
+          <label class="block text-slate-300 font-semibold mb-1">Upload Foto Trainer (Opsional)</label>
+          <input type="file" id="tf-photo" accept="image/*" class="w-full text-slate-400" />
+        </div>
+        <button type="submit" class="w-full py-2.5 rounded-xl gold-gradient text-slate-950 font-extrabold">Simpan Data Trainer</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: IMAGE PREVIEW -->
+  <div id="modal-preview" class="hidden fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4" onclick="closeModal('modal-preview')">
+    <div class="glass rounded-2xl max-w-md w-full p-5 space-y-3 text-center" onclick="event.stopPropagation()">
+      <h4 id="preview-title" class="font-bold text-sm text-white">Pratinjau Dokumen</h4>
+      <img id="preview-img" src="" alt="Preview" class="max-h-80 mx-auto rounded-xl border border-slate-700 object-contain" />
+      <p id="preview-caption" class="text-xs text-slate-400"></p>
+      <button onclick="closeModal('modal-preview')" class="px-5 py-2 rounded-xl bg-slate-800 text-white text-xs font-bold">Tutup</button>
+    </div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
